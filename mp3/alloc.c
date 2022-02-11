@@ -12,6 +12,11 @@ typedef struct _metadata_t {
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
 } metadata_t;
 
+// inline size_t align(size_t n) {
+//   return (n + sizeof(metadata_t) - 1) & ~(sizeof(metadata_t) - 1);
+// }
+void *startOfHeap = NULL;
+
 /**
  * Allocate space for array in memory
  *
@@ -36,8 +41,23 @@ typedef struct _metadata_t {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-    // implement calloc:
+  if (size * num == 0) {
     return NULL;
+  }
+    // implement calloc:
+
+  metadata_t *meta = sbrk( sizeof(metadata_t) );
+  meta->size = size;
+  meta->isUsed = 1;
+
+  if (startOfHeap == NULL) {
+      startOfHeap = meta;
+    }
+
+    void *ptr = sbrk( size * num);
+  
+  return ptr;
+
 }
 
 
@@ -62,11 +82,22 @@ void *calloc(size_t num, size_t size) {
  *
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/malloc/
  */
-void *startOfHeap = NULL;
+
 
 void *malloc(size_t size) {
   // implement malloc
-  return NULL;
+  metadata_t *meta = sbrk( sizeof(metadata_t) );
+  meta->size = size;
+  meta->isUsed = 1;
+
+  if (startOfHeap == NULL) {
+    startOfHeap = meta;
+  }
+
+  // Allocate heap memory for the requested memory:
+  void *ptr = sbrk( size );
+  // Return the pointer for the requested memory:
+  return ptr;
 }
 
 
@@ -87,7 +118,19 @@ void *malloc(size_t size) {
  *    passed as argument, no action occurs.
  */
 void free(void *ptr) {
-  // implement free
+  if (ptr == NULL || ptr >= sbrk(0)) {
+		return;
+	}
+  metadata_t *meta = ptr - sizeof( metadata_t );
+  meta->isUsed = 0;
+  meta->size = 1;
+  
+	// metadata_t* to_free = (metadata_t *)ptr - 1;
+	// if (to_free->isUsed == 1) {
+	// 	return;
+	// }
+	// to_free->isUsed = 0;
+  // to_free->size = 1;
 }
 
 
@@ -138,5 +181,6 @@ void free(void *ptr) {
  */
 void *realloc(void *ptr, size_t size) {
     // implement realloc:
+    
     return NULL;
 }
