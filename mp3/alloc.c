@@ -41,21 +41,23 @@ void *startOfHeap = NULL;
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-  if (size * num == 0) {
-    return NULL;
-  }
-    // implement calloc:
+  
+  // if (size * num == 0) {
+  //   return NULL;
+  // }
+  // implement calloc:
 
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
   meta->isUsed = 1;
 
   if (startOfHeap == NULL) {
-      startOfHeap = meta;
+      startOfHeap = sbrk(0);
     }
 
-    void *ptr = sbrk( size * num);
+  void *ptr = sbrk( size * num);
   
+  //also have to consider overflow
   return ptr;
 
 }
@@ -91,7 +93,7 @@ void *malloc(size_t size) {
   meta->isUsed = 1;
 
   if (startOfHeap == NULL) {
-    startOfHeap = meta;
+  startOfHeap = sbrk(0);
   }
 
   // Allocate heap memory for the requested memory:
