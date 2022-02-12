@@ -6,35 +6,35 @@
 #include "lib/mstats-utils.h"
 
 // // BASIC MEMORY ALLOCATOR - 10 points
-// TEST_CASE("`./mstats tests/samples_exe/sample1` test (allocation test)", "[weight=2][part=1]") {
-//   system("make -s");
-//   system("./mstats tests/samples_exe/sample1 evaluate");
-//   mstats_result * result = read_mstats_result("mstats_result.txt");
-//   REQUIRE(result->status == 1);
-//   REQUIRE(result->max_heap_used < 1700);
-//   REQUIRE(result->max_heap_used > 0);
-//   system("rm mstats_result.txt");
-// }
+TEST_CASE("`./mstats tests/samples_exe/sample1` test (allocation test)", "[weight=2][part=1]") {
+  system("make -s");
+  system("./mstats tests/samples_exe/sample1 evaluate");
+  mstats_result * result = read_mstats_result("mstats_result.txt");
+  REQUIRE(result->status == 1);
+  REQUIRE(result->max_heap_used < 1700);
+  REQUIRE(result->max_heap_used > 0);
+  system("rm mstats_result.txt");
+}
 
-// TEST_CASE("`./mstats tests/samples_exe/sample2` test (allocation test)", "[weight=2][part=1]") {
-//   system("make -s");
-//   system("./mstats tests/samples_exe/sample2 evaluate");
-//   mstats_result * result = read_mstats_result("mstats_result.txt");
-//   REQUIRE(result->status == 1);
-//   REQUIRE(result->max_heap_used < 10000);
-//   REQUIRE(result->max_heap_used > 0);
-//   system("rm mstats_result.txt");
-// }
+TEST_CASE("`./mstats tests/samples_exe/sample2` test (allocation test)", "[weight=2][part=1]") {
+  system("make -s");
+  system("./mstats tests/samples_exe/sample2 evaluate");
+  mstats_result * result = read_mstats_result("mstats_result.txt");
+  REQUIRE(result->status == 1);
+  REQUIRE(result->max_heap_used < 10000);
+  REQUIRE(result->max_heap_used > 0);
+  system("rm mstats_result.txt");
+}
 
-// TEST_CASE("`./mstats tests/samples_exe/sample3` test (allocation test)", "[weight=2][part=1]") {
-//   system("make -s");
-//   system("./mstats tests/samples_exe/sample3 evaluate");
-//   mstats_result * result = read_mstats_result("mstats_result.txt");
-//   REQUIRE(result->status == 1);
-//   REQUIRE(result->max_heap_used < 10000);
-//   REQUIRE(result->max_heap_used > 0);
-//   system("rm mstats_result.txt");
-// }
+TEST_CASE("`./mstats tests/samples_exe/sample3` test (allocation test)", "[weight=2][part=1]") {
+  system("make -s");
+  system("./mstats tests/samples_exe/sample3 evaluate");
+  mstats_result * result = read_mstats_result("mstats_result.txt");
+  REQUIRE(result->status == 1);
+  REQUIRE(result->max_heap_used < 10000);
+  REQUIRE(result->max_heap_used > 0);
+  system("rm mstats_result.txt");
+}
 
 TEST_CASE("`./mstats tests/samples_exe/sample7` test (allocation test with calloc)", "[weight=2][part=1]") {
   system("make -s");

@@ -1,4 +1,6 @@
+//#include “alloc.c”
 #include <stdlib.h>
+
 
 int main() {
   void *a = malloc(256);  // 256 == 0x 100 bytes

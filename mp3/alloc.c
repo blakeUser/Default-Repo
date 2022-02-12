@@ -1,20 +1,18 @@
 /**
- * Malloc
+ * Mallocasdfasdf
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
+  struct metadata_t * next;
+  struct metadata_t * prev;
+  void * ptr;
 } metadata_t;
 
-// inline size_t align(size_t n) {
-//   return (n + sizeof(metadata_t) - 1) & ~(sizeof(metadata_t) - 1);
-// }
 void *startOfHeap = NULL;
 
 /**
@@ -41,25 +39,10 @@ void *startOfHeap = NULL;
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-  
-  // if (size * num == 0) {
-  //   return NULL;
-  // }
-  // implement calloc:
-
-  metadata_t *meta = sbrk( sizeof(metadata_t) );
-  meta->size = size;
-  meta->isUsed = 1;
-
-  if (startOfHeap == NULL) {
-      startOfHeap = sbrk(0);
-    }
-
-  void *ptr = sbrk( size * num);
-  
-  //also have to consider overflow
+  void *ptr = malloc(num * size);
+  if (!ptr) return NULL;
+  memset(ptr, 0, num * size);
   return ptr;
-
 }
 
 
@@ -87,17 +70,24 @@ void *calloc(size_t num, size_t size) {
 
 
 void *malloc(size_t size) {
-  // implement malloc
+  //printf("Inside: malloc(%lu):\n", size);
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
   meta->isUsed = 1;
 
   if (startOfHeap == NULL) {
-  startOfHeap = sbrk(0);
+    startOfHeap = sbrk(0);
   }
-
-  // Allocate heap memory for the requested memory:
+  
+  metadata_t *curMeta = startOfHeap;
+  //printf("-- Start of Heap (%p) --\n", startOfHeap);
+  void *endOfHeap = sbrk(0);
   void *ptr = sbrk( size );
+  while ((void *)curMeta < endOfHeap) {   // While we're before the end of the heap...
+    //printf("metadata for memory %p: (%p, size=%d, isUsed=%d)\n", (void *)curMeta + sizeof(metadata_t), curMeta, curMeta->size, curMeta->isUsed);
+    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  }
+  //printf("-- End of Heap (%p) --\n\n", endOfHeap);
   // Return the pointer for the requested memory:
   return ptr;
 }
@@ -125,14 +115,10 @@ void free(void *ptr) {
 	}
   metadata_t *meta = ptr - sizeof( metadata_t );
   meta->isUsed = 0;
-  meta->size = 1;
-  
-	// metadata_t* to_free = (metadata_t *)ptr - 1;
-	// if (to_free->isUsed == 1) {
-	// 	return;
-	// }
-	// to_free->isUsed = 0;
-  // to_free->size = 1;
+  meta->size = 0;
+}
+
+int split_mem(metadata_t *block, size_t size) {
 }
 
 
@@ -182,7 +168,5 @@ void free(void *ptr) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
  */
 void *realloc(void *ptr, size_t size) {
-    // implement realloc:
-    
-    return NULL;
+
 }
