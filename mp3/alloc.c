@@ -10,13 +10,15 @@
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
+  //void * ptrOfMeta;
+  //struct metadata_t *next;
+  //struct metadata_t *prev;
 } metadata_t;
 
-// inline size_t align(size_t n) {
-//   return (n + sizeof(metadata_t) - 1) & ~(sizeof(metadata_t) - 1);
-// }
-void *startOfHeap = NULL;
 
+void *startOfHeap = NULL;
+static size_t requestSize = 0;
+static size_t sbrkSize = 0;
 /**
  * Allocate space for array in memory
  *
@@ -41,24 +43,13 @@ void *startOfHeap = NULL;
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-  
-  // if (size * num == 0) {
-  //   return NULL;
-  // }
-  // implement calloc:
-  void * ptr = malloc(num * size);
-  // metadata_t *meta = sbrk( sizeof(metadata_t) );
-  // meta->size = size;
-  // meta->isUsed = 1;
-
-  // if (startOfHeap == NULL) {
-  //     startOfHeap = sbrk(0);
-  //   }
-
-  // void *ptr = sbrk( size * num);\
+  if (size * num == 0) {
+   return NULL;
+  }
+  void *ptr = malloc(num * size);
   //also have to consider overflow
+  memset(ptr, 0, num * size);
   return ptr;
-
 }
 
 
@@ -86,19 +77,42 @@ void *calloc(size_t num, size_t size) {
 
 
 void *malloc(size_t size) {
-  // implement malloc
-  metadata_t *meta = sbrk( sizeof(metadata_t) );
-  meta->size = size;
-  meta->isUsed = 1;
+  if (size == 0) return NULL;
+  metadata_t *chosenBlock = NULL;
+  metadata_t *copyofHead = startOfHeap;
 
+  // if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
+    
+  //   while ( copyofHead != NULL ) {  
+  //     copyofHead = copyofHead + copyofHead->size;
+
+  //     if (copyofHead->isUsed == 0 && copyofHead->size >= size) {
+
+  //       printf("过了这个地方怎么办?");
+  //       chosenBlock->isUsed = 1;
+  //       chosenBlock->size = size;
+  //       metadata_t * theNextFree = chosenBlock + chosenBlock->size + 1;
+  //       theNextFree->isUsed = 1;
+  //       theNextFree->size = original - chosenBlock->size;
+  //       return chosenBlock;
+
+  //     }
+  //   }
+  // }
+
+  
+  chosenBlock = sbrk( sizeof(metadata_t) + size ); //In future operation, don't forget add 1
+  chosenBlock->size = size;
+  chosenBlock->isUsed = 1;
   if (startOfHeap == NULL) {
-  startOfHeap = sbrk(0);
+    startOfHeap = chosenBlock;
   }
+  //printf("%p address is \n", sbrk(0)); 
+  //printf("%p start is \n", startOfHeap);
 
-  // Allocate heap memory for the requested memory:
-  void *ptr = sbrk( size );
-  // Return the pointer for the requested memory:
-  return ptr;
+  sbrkSize += size + sizeof(metadata_t);
+  requestSize += size + sizeof(metadata_t);
+  return chosenBlock;
 }
 
 
@@ -118,22 +132,15 @@ void *malloc(size_t size) {
  *    calloc() or realloc() to be deallocated.  If a null pointer is
  *    passed as argument, no action occurs.
  */
+
 void free(void *ptr) {
   if (ptr == NULL || ptr >= sbrk(0)) {
 		return;
 	}
-  metadata_t *meta = ptr - sizeof( metadata_t );
+  metadata_t *meta = ptr;
   meta->isUsed = 0;
   meta->size = 1;
-  
-	// metadata_t* to_free = (metadata_t *)ptr - 1;
-	// if (to_free->isUsed == 1) {
-	// 	return;
-	// }
-	// to_free->isUsed = 0;
-  // to_free->size = 1;
 }
-
 
 /**
  * Reallocate memory block
@@ -171,6 +178,18 @@ void free(void *ptr) {
  *    A pointer to the reallocated memory block, which may be either the
  *    same as the ptr argument or a new location.
  *
+ * @return
+ *    A pointer to the reallocated memory block, which may be either the
+ *    same as the ptr argument or a new location.
+ *
+ * @return
+ *    A pointer to the reallocated memory block, which may be either the
+ *    same as the ptr argument or a new location.
+ *
+ * @return
+ *    A pointer to the reallocated memory block, which may be either the
+ *    same as the ptr argument or a new location.
+ *
  *    The type of this pointer is void*, which can be cast to the desired
  *    type of data pointer in order to be dereferenceable.
  *
@@ -181,7 +200,5 @@ void free(void *ptr) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
  */
 void *realloc(void *ptr, size_t size) {
-    // implement realloc:
-
     return NULL;
 }
