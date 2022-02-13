@@ -36,9 +36,13 @@ PNG * PNG_open(const char * filename, const char * mode) {
   signiture[6] = '\x1a';
   signiture[7] = '\x0a';
   signiture[8] = '\0';
+<<<<<<< HEAD
 
   PNG * png_toReturn = malloc ( sizeof(PNG) );
   
+=======
+  PNG * png_toReturn = malloc ( sizeof(PNG) );
+>>>>>>> main
   unsigned char * buffer = malloc(500);
   FILE *fstream = fopen(filename, mode);
 
@@ -71,12 +75,16 @@ PNG * PNG_open(const char * filename, const char * mode) {
     png_toReturn->theString = buffer;
     FILE * tmp = fstream;
     png_toReturn->pointer_key = tmp;
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     if (strcmp(tmp_Copy, signiture) == 0) {
       if ( *mode == 'r' ) {
         fseek(tmp, 8, SEEK_SET); 
       }
     } else if ( *mode == 'w' ) {
+<<<<<<< HEAD
 
       fwrite(signiture, 1, 8, fstream);
       ftell(fstream); //This 
@@ -85,6 +93,14 @@ PNG * PNG_open(const char * filename, const char * mode) {
       return NULL;
     }
     free(buffer);
+=======
+      //fseek(fstream, 0, SEEK_SET); 
+      fwrite(signiture, sizeof(char), sizeof(buffer), fstream);
+      //fseek(fstream, 0, SEEK_SET);
+    } else {
+      return NULL;
+    }
+>>>>>>> main
     return png_toReturn;
 } 
 
@@ -100,6 +116,7 @@ PNG * PNG_open(const char * filename, const char * mode) {
  * Users of the library must call `PNG_free_chunk` on all returned chunks.
  */
 size_t PNG_read(PNG * png, PNG_Chunk * chunk) { //2314 is apparently big endian, but the preivous two are small indian
+<<<<<<< HEAD
  
   uint32_t length = 0;
 
@@ -145,6 +162,34 @@ size_t PNG_read(PNG * png, PNG_Chunk * chunk) { //2314 is apparently big endian,
   chunk->crc = ntohl(chunk->crc);
   printf("进read了");
   return 4 + 4 + chunk->len + 4;
+=======
+  int length = 0;
+  fread( &length, 4, 1, (png->pointer_key) );   // stored in network order in the file
+  length = ntohl(length);  
+
+  // printf("%d, the length is \n", length);
+  // printf("%d where am 0.5 \n", ftell(png->pointer_key));
+  chunk->len = (length);
+  //fseek(png->pointer_key, 4L, SEEK_CUR); //set to type head
+  //printf("%d where am 1 \n", ftell(png->pointer_key));
+
+  fgets (chunk->type, 5, png->pointer_key);
+  //fseek(png->pointer_key, 4L, SEEK_CUR); //set to data head
+  //printf("%d where am 2 \n", ftell(png->pointer_key));
+
+  fseek(png->pointer_key, (length), SEEK_CUR); //set to crc head
+  //printf("%d where am 3 \n", ftell(png->pointer_key));
+
+  fseek(png->pointer_key, (4L), SEEK_CUR); //set to crc end
+  //printf("%d where am 4 \n", ftell(png->pointer_key));
+
+  //strncpy(chunk->type, pointer_length, 4);
+  chunk->type[4] = '\0';
+
+  // size_t toReturn = 4 + 4 + 4 + (length);
+  // png->pointer_key = png->pointer_key + toReturn;
+  return length + 4 + 4 + 4;
+>>>>>>> main
 }
 
 /**
@@ -152,6 +197,7 @@ size_t PNG_read(PNG * png, PNG_Chunk * chunk) { //2314 is apparently big endian,
  * 
  * Returns the number of bytes written. 
  */
+<<<<<<< HEAD
 
 size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
   printf("%d first first  \n", ftell(png->pointer_key));
@@ -209,6 +255,19 @@ size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
   // free(buffer);
 
   return 4 + 4 + chunk->len + 4;
+=======
+size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
+  printf("%d my motherfucker is \n", ftell(png->pointer_key));
+  uint32_t toTransfer = chunk->len;
+
+  // fread( &length, 4, 1, (png->pointer_key) );   // stored in network order in the file
+  // length = ntohl(length);  
+  
+  //fwrite(signiture, sizeof(char), sizeof(buffer), fstream);
+  fwrite(htonl(toTransfer), sizeof(uint16_t), sizeof(toTransfer), png->pointer_key);
+
+  return 0;
+>>>>>>> main
 }
 
 
@@ -216,12 +275,15 @@ size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
  * Frees all memory allocated by this library related to `chunk`.
  */
 void PNG_free_chunk(PNG_Chunk *chunk) {
+<<<<<<< HEAD
   // if (chunk->data != NULL) {
   //   free(chunk->data);
   //   chunk->data = NULL;
   // }
   // chunk->crc = 0;
   // chunk->len = 0;
+=======
+>>>>>>> main
 }
 
 
@@ -230,6 +292,7 @@ void PNG_free_chunk(PNG_Chunk *chunk) {
  */
 void PNG_close(PNG *png) {
 
+<<<<<<< HEAD
   // if (png->pointer_key != NULL) {
   //  //   free(png->pointer_key);
   //     png->pointer_key = NULL;
@@ -239,4 +302,6 @@ void PNG_close(PNG *png) {
   //   png->theString = NULL;
   // }
  // fclose(png);
+=======
+>>>>>>> main
 }

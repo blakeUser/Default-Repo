@@ -9,20 +9,29 @@ int png_analyze(const char *png_filename) {
   if (!png) { return ERROR_INVALID_FILE; }
   printf("PNG Header: OK\n");  
 
+<<<<<<< HEAD
   PNG_Chunk randomChunk;
   //printf("%d the random len is \n", randomChunk.len);
+=======
+>>>>>>> main
 
   // Read chunks until reaching "IEND" or an invalid chunk:
   while (1) {
     // Read chunk and ensure we get a valid result (exit on error):
     PNG_Chunk chunk;
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     if (PNG_read(png, &chunk) == 0) {
       PNG_close(png);
       return ERROR_INVALID_CHUNK_DATA;
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     // Report data about the chunk to the command line:
     printf("Chunk: %s (%d bytes of data)\n", chunk.type, chunk.len);
 
@@ -47,6 +56,10 @@ int main(int argc, char *argv[]) {
     printf("Usage: %s <PNG File>\n", argv[0]);
     return ERROR_INVALID_PARAMS;
   }
+<<<<<<< HEAD
   printf("first");
+=======
+
+>>>>>>> main
   return png_analyze(argv[1]);
 }

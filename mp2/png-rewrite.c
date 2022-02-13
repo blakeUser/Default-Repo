@@ -8,6 +8,10 @@ int png_rewrite(const char *png_filename_in, const char *png_filename_out) {
   // Open the file specified in argv[1] for reading and argv[2] for writing:
   PNG *png = PNG_open(png_filename_in, "r");
   if (!png) { return ERROR_INVALID_FILE; }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   PNG *out = PNG_open(png_filename_out, "w");
   printf("PNG Header written.\n");
   size_t bytesWritten;
@@ -22,7 +26,10 @@ int png_rewrite(const char *png_filename_in, const char *png_filename_out) {
       PNG_close(out);
       return ERROR_INVALID_CHUNK_DATA;
     }
+<<<<<<< HEAD
     
+=======
+>>>>>>> main
 
     // Report data about the chunk to the command line:
     bytesWritten = PNG_write(out, &chunk);

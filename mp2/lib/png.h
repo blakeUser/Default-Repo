@@ -1,11 +1,25 @@
 #pragma once
 #include <stdint.h>
+<<<<<<< HEAD
+=======
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+>>>>>>> main
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 struct _PNG {
+=======
+// PNG
+struct _PNG {
+  // Add any elements you need to store the PNG here:
+  // char * signiture;
+>>>>>>> main
   
   char * theString;
   FILE* pointer_key;
