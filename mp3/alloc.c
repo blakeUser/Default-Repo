@@ -43,10 +43,10 @@ static size_t sbrkSize = 0;
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-  if (size * num == 0) {
-   return NULL;
-  }
   void *ptr = malloc(num * size);
+  if (!ptr) {
+    return NULL;
+  }
   //also have to consider overflow
   memset(ptr, 0, num * size);
   return ptr;
@@ -78,8 +78,8 @@ void *calloc(size_t num, size_t size) {
 
 void *malloc(size_t size) {
   if (size == 0) return NULL;
-  metadata_t *chosenBlock = NULL;
-  metadata_t *copyofHead = startOfHeap;
+  //metadata_t *chosenBlock = NULL;
+  //metadata_t *copyofHead = startOfHeap;
 
   // if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
     
@@ -141,9 +141,9 @@ void free(void *ptr) {
   if (ptr == NULL || ptr >= sbrk(0)) {
 		return;
 	}
-  metadata_t *meta = ptr;
+  metadata_t *meta = (metadata_t *)ptr - 1;
   meta->isUsed = 0;
-  meta->size = 1;
+  //coaleseBlock
 }
 
 /**
