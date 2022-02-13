@@ -16,9 +16,10 @@ typedef struct _metadata_t {
 } metadata_t;
 
 
-void *startOfHeap = NULL;
-static size_t requestSize = 0;
-static size_t sbrkSize = 0;
+static metadata_t *startOfHeap = NULL;
+// static size_t requestSize = 0;
+// static size_t sbrkSize = 0;
+
 /**
  * Allocate space for array in memory
  *
@@ -77,7 +78,7 @@ void *calloc(size_t num, size_t size) {
 
 
 void *malloc(size_t size) {
-  if (size == 0) return NULL;
+   if (size == 0) return NULL; 
   //metadata_t *chosenBlock = NULL;
   //metadata_t *copyofHead = startOfHeap;
 
@@ -102,7 +103,14 @@ void *malloc(size_t size) {
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
   meta->isUsed = 1;
+
+  if (startOfHeap == NULL) {
+    startOfHeap = meta;
+  }
+
+  // Allocate heap memory for the requested memory:
   void *ptr = sbrk( size );
+  // Return the pointer for the requested memory:
   return ptr;
 
   // chosenBlock = sbrk( sizeof(metadata_t) + size ); //In future operation, don't forget add 1
@@ -141,7 +149,7 @@ void free(void *ptr) {
   if (ptr == NULL || ptr >= sbrk(0)) {
 		return;
 	}
-  metadata_t *meta = (metadata_t *)ptr - 1;
+  metadata_t *meta = ptr - sizeof( metadata_t );
   meta->isUsed = 0;
   //coaleseBlock
 }
