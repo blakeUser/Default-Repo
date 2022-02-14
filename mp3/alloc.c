@@ -36,8 +36,6 @@ void *calloc(size_t num, size_t size) {
 
 metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
 
-  //if big enough
-
   if (ptr->size - sizeof(metadata_t) - acquire >= 100) {
     //printf("%p  the address of.. newAddress\n", ptr)
     metadata_t * newAddress = (void*)(ptr + 1) + acquire; //?
@@ -54,7 +52,7 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
 
     //split and fix the list
 
-    if (ptr->prev == NULL) {
+    if (ptr->prev == NULL) { //if we find head
       // printf("我最喜欢娜美\n");
       // printf("%p  current ptr \n",ptr);
       // printf("%p  start of the list \n", startofFreeList);
@@ -62,9 +60,9 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
       newAddress->next = ptr->next;
       newAddress->next->prev = newAddress;
       startofFreeList = newAddress;
-      ptr->next = 0;
+      //ptr->next = 0;
       //ptr->prev = 0;
-      / printf("%p  free list \n",startofFreeList);
+      // printf("%p  free list \n",startofFreeList);
       // printf("%p  free list -> next\n",startofFreeList->next);
       // printf("%p  free list -> next -> \n",startofFreeList->next->next);
     } else {
@@ -155,4 +153,4 @@ void free(void *ptr) {
 void *realloc(void *ptr, size_t size) {
 
     return NULL;
-}
+} 
