@@ -135,7 +135,7 @@ void *malloc(size_t size) {
     startOfHeap = sbrk(0);//startofheap 永远不会变，这里住着的永远是第一个meta
   }
 
-  sbrkSize += size + sizeof(metadata_t);
+  sbrkSize +=   size + sizeof(metadata_t);
   requestSize += size + sizeof(metadata_t);
   //if we have to increase the heap
   metadata_t *meta = sbrk( sizeof(metadata_t) );
