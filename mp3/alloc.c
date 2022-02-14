@@ -82,7 +82,7 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
       newAddress->prev = ptr->prev;
     }
   
-    //modify old address
+    //odify old address
     ptr->isUsed = 1;
     ptr->size = acquire;
     ptr->ptrInMeta = ptr - sizeof(metadata_t);
