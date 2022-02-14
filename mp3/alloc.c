@@ -20,7 +20,6 @@ static size_t requestSize = 0;
 static size_t sbrkSize = 0;
 
 metadata_t *get_addr(void *ptr) {
-    printf("I was called!");
     metadata_t * meta = ptr - sizeof(metadata_t);
     return meta;
 }
@@ -38,41 +37,38 @@ void *calloc(size_t num, size_t size) {
 metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
 
   //if big enough
+
   if (ptr->size - sizeof(metadata_t) - acquire >= 100) {
-    printf("%p  the address of.. newAddress\n", ptr);
+    //printf("%p  the address of.. newAddress\n", ptr)
     metadata_t * newAddress = (void*)(ptr + 1) + acquire; //?
     newAddress->size = ptr->size - sizeof(metadata_t) - acquire;
     newAddress->isUsed = 0;
-    newAddress->ptrInMeta = newAddress + sizeof(metadata_t); //?
-    printf("%p  the address of.. newAddress\n", newAddress);
+    newAddress->ptrInMeta = newAddress + 1; //?
 
-    // printf("%d theacquire size is \n", acquire);
-    // printf("%d the new address size is \n", newAddress->size);
-    // printf("%d the ptr size is \n", ptr->size);
-    // printf("%d size of meta \n", sizeof(metadata_t));
+    printf("%p  the address of.. newAddress\n", newAddress->ptrInMeta);
+    printf("%p  the address of.. newAddress\n", newAddress);
 
     ptr->isUsed = 1;
     ptr->size = acquire;
     ptr->ptrInMeta = ptr + sizeof(metadata_t);
+
     //split and fix the list
+
     if (ptr->prev == NULL) {
-      // ptr->next->prev = newAddress;
-      // newAddress->next = ptr->next;
-      // newAddress->prev = NULL;
-      // ptr->next = NULL;
-      // printf("%p  the address of.. ptr->next\n", ptr);
-      // printf("%p  the address of.. ptr->next \n", ptr->next);
-      // printf("%p  the address of.. ptr->next\n", ptr->next->next);
-      // printf("%p  New address is\n", newAddress);
+      // printf("我最喜欢娜美\n");
+      // printf("%p  current ptr \n",ptr);
+      // printf("%p  start of the list \n", startofFreeList);
+
       newAddress->next = ptr->next;
       newAddress->next->prev = newAddress;
-      // printf("%p  the address of.. ptr->next\n", newAddress);
-      // printf("%p  the address of.. ptr->next \n", newAddress->next);
-      // printf("%p  the address of.. ptr->next\n", newAddress->next->next);
-      // printf("%p  New address is\n", newAddress);
+      startofFreeList = newAddress;
       ptr->next = 0;
-      ptr->prev = 0;
+      //ptr->prev = 0;
+      / printf("%p  free list \n",startofFreeList);
+      // printf("%p  free list -> next\n",startofFreeList->next);
+      // printf("%p  free list -> next -> \n",startofFreeList->next->next);
     } else {
+      printf("\n");
       ptr->prev->next = newAddress;
       newAddress->next = ptr->next;
       ptr->next->prev = newAddress;
