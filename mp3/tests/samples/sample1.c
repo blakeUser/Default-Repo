@@ -1,7 +1,5 @@
 //#include “alloc.c”
 #include <stdlib.h>
-
-
 int main() {
   void *a = malloc(256);  // 256 == 0x 100 bytes
   void *b = malloc(256);
@@ -13,6 +11,7 @@ int main() {
   free(b);
   free(d);
   /* Line 10 */
+
   void *r1 = malloc(10);
   void *r2 = malloc(10);
   void *r3 = malloc(300);

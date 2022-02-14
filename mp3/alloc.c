@@ -1,4 +1,4 @@
- /*
+/*
  * Malloc
  */
 #include <stdio.h>
@@ -10,15 +10,23 @@
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
-  // void * ptr;
-  // struct _metadata_t *next;
-  // struct _metadata_t *prev;
+  void * ptrInMeta;
+  struct _metadata_t *next;
+  struct _metadata_t *prev;
 } metadata_t;
 
 
 static metadata_t *startOfHeap = NULL;
-// static size_t requestSize = 0;
-// static size_t sbrkSize = 0;
+static metadata_t *startofFreeList = NULL;
+
+static size_t requestSize = 0;
+static size_t sbrkSize = 0;
+
+metadata_t *get_addr(void *ptr) {
+    printf("I was called!");
+    metadata_t * meta = ptr - sizeof(metadata_t);
+    return meta;
+}
 
 /**
  * Allocate space for array in memory
@@ -53,6 +61,41 @@ void *calloc(size_t num, size_t size) {
   return ptr;
 }
 
+metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
+  //if big enough
+  if (ptr->size - sizeof(metadata_t) - acquire >= 100) {
+    //modify new Address
+    metadata_t * newAddress = ptr + acquire + sizeof(metadata_t);
+    newAddress->size = ptr->size - sizeof(metadata_t) - acquire;
+    newAddress->isUsed = 0;
+
+    //split and fix the list
+    if (ptr->prev == NULL) {
+      ptr->next->prev = newAddress;
+      newAddress->next = ptr->next;
+      newAddress->prev = NULL;
+      ptr->next = NULL;
+    } else {
+      ptr->prev->next = newAddress;
+      newAddress->next = ptr->next;
+      ptr->next->prev = newAddress;
+      newAddress->prev = ptr->prev;
+    }
+  
+    //modify old address
+    ptr->isUsed = 1;
+    ptr->size = acquire;
+    ptr->ptrInMeta = ptr - sizeof(metadata_t);
+    printf("有一说一");
+    return ptr;
+  } else {
+    ptr->isUsed = 1;
+    ptr->ptrInMeta = ptr - sizeof(metadata_t);
+    printf("有👂说");
+    return ptr;
+  }
+}
+
 
 /**
  * Allocate memory block
@@ -76,55 +119,60 @@ void *calloc(size_t num, size_t size) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/malloc/
  */
 
+void printStateMent(size_t size, metadata_t * endOfHeap, metadata_t * startOfHeap) {
+  printf("Inside: malloc(%lu):\n", size);
+  metadata_t *curMeta = startOfHeap;
+  printf("-- Start of Heap (%p) --\n", startOfHeap);
+  while ((void *)curMeta < endOfHeap) {   // While we're before the end of the heap...
+    printf("metadata for memory %p: (%p, size=%d, isUsed=%d)\n", (void *)curMeta + sizeof(metadata_t), curMeta, curMeta->size, curMeta->isUsed);
+    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  }
+  printf("-- End of Heap (%p) --\n\n", endOfHeap);
+}
+
 
 void *malloc(size_t size) {
-   if (size == 0) return NULL; 
-  //metadata_t *chosenBlock = NULL;
+  if (size == 0) return NULL; 
+  metadata_t *chosenBlock = NULL;
   //metadata_t *copyofHead = startOfHeap;
+  metadata_t *curMeta = startOfHeap;
+  void *endOfHeap = sbrk(0);
 
-  // if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
-    
-  //   while ( copyofHead != NULL ) {  
-  //     copyofHead = copyofHead + copyofHead->size;
-  //     if (copyofHead->isUsed == 0 && copyofHead->size >= size) {
 
-  //       split_mem(copyofHead, size);
-  //       requestSize += size + sizeof(metadata_t);
-  //       copyofHead->isUsed = 0;
-  //       requested_size += chosen->size;
-  //       return chosen->ptr;
-        
-  //       //theNextFree->size = original - chosenBlock->size;
-  //       return chosenBlock;
-  //     }
-  //   }
-  // }
+  //if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
+  metadata_t * copyOfList = startofFreeList;
+  while ( copyOfList ) {  
+       if (copyOfList->isUsed == 0 && copyOfList->size >= size) {
+          metadata_t * toReturn = split_mem(copyOfList, size);  
+          // requestSize += toReturn->size + sizeof(metadata_t);
+          // return toReturn->ptrInMeta;
+       }
+      copyOfList = copyOfList->next;
+    }
+  //}
 
+  //metadata_t *meta;
+  if (startOfHeap == NULL) {
+    startOfHeap = sbrk(0);//startofheap 永远不会变，这里住着的永远是第一个meta
+  }
+
+  /* should I use linked list? 
+  meta->prev = tail;
+  meta->prev->next = meta;
+  tail = meta; 
+  */
+
+  printStateMent(size, endOfHeap, startOfHeap);
+  sbrkSize += size + sizeof(metadata_t);
+  requestSize += size + sizeof(metadata_t);
+
+  //if we have to increase the heap
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
   meta->isUsed = 1;
-
-  if (startOfHeap == NULL) {
-    startOfHeap = meta;
-  }
-
-  // Allocate heap memory for the requested memory:
   void *ptr = sbrk( size );
-  // Return the pointer for the requested memory:
-  return ptr;
-
-  // chosenBlock = sbrk( sizeof(metadata_t) + size ); //In future operation, don't forget add 1
-  // chosenBlock->size = size;
-  // chosenBlock->isUsed = 1;
-  // if (startOfHeap == NULL) {
-  //   startOfHeap = chosenBlock;
-  // }
-  // //printf("%p address is \n", sbrk(0)); 
-  // //printf("%p start is \n", startOfHeap);
-
-  // sbrkSize += size + sizeof(metadata_t);
-  // requestSize += size + sizeof(metadata_t);
-  // return chosenBlock;
+  meta->ptrInMeta = ptr;
+  return meta->ptrInMeta;
 }
 
 
@@ -146,13 +194,19 @@ void *malloc(size_t size) {
  */
 
 void free(void *ptr) {
-  if (ptr == NULL || ptr >= sbrk(0)) {
-		return;
-	}
-  metadata_t *meta = ptr - sizeof( metadata_t );
+  metadata_t *meta = get_addr(ptr);
   meta->isUsed = 0;
+
+  if (startofFreeList == NULL) {
+     startofFreeList = meta;
+  } else {
+    meta->next = startofFreeList;
+    startofFreeList->prev = meta; 
+    startofFreeList = meta;
+  }
   //coaleseBlock
 }
+
 
 /**
  * Reallocate memory block
@@ -212,6 +266,8 @@ void free(void *ptr) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
  */
 void *realloc(void *ptr, size_t size) {
+
     return NULL;
 }
+
 
