@@ -35,28 +35,25 @@ void *calloc(size_t num, size_t size) {
 }
 
 metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
-
-  if (ptr->size - sizeof(metadata_t) - acquire >= 100) {
+  printf("%d 256是吧？\n", ptr->size);
+  if (ptr->size - 1 - acquire >= 100) {
     //printf("%p  the address of.. newAddress\n", ptr)
     metadata_t * newAddress = (void*)(ptr + 1) + acquire; //?
     newAddress->size = ptr->size - sizeof(metadata_t) - acquire;
     newAddress->isUsed = 0;
     newAddress->ptrInMeta = newAddress + 1; //?
 
-    printf("%p  the address of.. newAddress\n", newAddress->ptrInMeta);
-    printf("%p  the address of.. newAddress\n", newAddress);
+    printf("%p  the address of.. newAddress \n", newAddress->ptrInMeta);
+    printf("%p  the address of.. newAddress \n", newAddress);
 
     ptr->isUsed = 1;
     ptr->size = acquire;
     ptr->ptrInMeta = ptr + sizeof(metadata_t);
 
     //split and fix the list
-
     if (ptr->prev == NULL) { //if we find head
-      // printf("我最喜欢娜美\n");
       // printf("%p  current ptr \n",ptr);
       // printf("%p  start of the list \n", startofFreeList);
-
       newAddress->next = ptr->next;
       newAddress->next->prev = newAddress;
       startofFreeList = newAddress;
@@ -66,18 +63,28 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
       // printf("%p  free list -> next\n",startofFreeList->next);
       // printf("%p  free list -> next -> \n",startofFreeList->next->next);
     } else {
-      printf("\n");
+
+      printf("我在唐山和张佳媚 \n");
+      printf("%p  free list \n",startofFreeList);
+      printf("%p  free list -> next\n",startofFreeList->next);
+      printf("%p  free list -> next -> \n",startofFreeList->next->next);
+      
       ptr->prev->next = newAddress;
       newAddress->next = ptr->next;
       ptr->next->prev = newAddress;
       newAddress->prev = ptr->prev;
+
+      printf("%p  free list \n",startofFreeList);
+      printf("%p  free list -> next\n",startofFreeList->next);
+      printf("%p  free list -> next -> \n",startofFreeList->next->next);
     }
     //modify old address
-    return ptr;
+      return ptr;
   } else {
+    printf("有👂👂👂👂👂👂👂👂👂👂👂👂👂说\n");
+    printf("%p myth pointer is \n", ptr);
     ptr->isUsed = 1;
     ptr->ptrInMeta = ptr + sizeof(metadata_t);
-    //printf("有👂👂👂👂👂👂👂👂👂👂👂👂👂说");
     return ptr;
   }
 }
@@ -107,12 +114,18 @@ void *malloc(size_t size) {
   //if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
   metadata_t * copyOfList = startofFreeList;
 
+  if (size == 250) {
+    printf("we get 250\n");
+  }
+  
   while ( copyOfList ) {  
+    printf("%d the size of 值得怀疑得数 \n", copyOfList->size);
        if (copyOfList->isUsed == 0 && copyOfList->size >= size) {
           metadata_t * toReturn = split_mem(copyOfList, size);  
           requestSize +=  sizeof(metadata_t);
-          toReturn->isUsed = 1;
-          return toReturn + sizeof(metadata_t);
+          //toReturn->isUsed = 1;
+          printStateMent(size, endOfHeap, startOfHeap);
+          return toReturn + 1;
        }
       copyOfList = copyOfList->next;
     }
@@ -122,16 +135,15 @@ void *malloc(size_t size) {
     startOfHeap = sbrk(0);//startofheap 永远不会变，这里住着的永远是第一个meta
   }
 
-  printStateMent(size, endOfHeap, startOfHeap);
   sbrkSize += size + sizeof(metadata_t);
   requestSize += size + sizeof(metadata_t);
-
   //if we have to increase the heap
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
   meta->isUsed = 1;
   void *ptr = sbrk( size );
   meta->ptrInMeta = ptr;
+  printStateMent(size, endOfHeap, startOfHeap);
   return meta->ptrInMeta;
 }
 
@@ -147,7 +159,7 @@ void free(void *ptr) {
     startofFreeList = meta;
   }
 
-  //coaleseBlock
+  //coaleseBlock()
 }
 
 void *realloc(void *ptr, size_t size) {
