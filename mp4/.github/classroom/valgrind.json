@@ -5,7 +5,7 @@
       "setup": "make test",
       "run": "valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 ./test",
       "comparison": "included",
-      "timeout": 0.5,
+      "timeout": 1.7000000000000002,
       "points": 35.0
     }
   ]

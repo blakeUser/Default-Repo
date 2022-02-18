@@ -88,7 +88,7 @@ void *test_add_hedgehogs_mutex(void *wallet) {
   return NULL;
 }
 
-TEST_CASE("Test HedgeHog Food and HedgeHogs - Mutex", "[weight=10][part=2]") {
+TEST_CASE("Test HedgeHog Food and HedgeHogs - Mutex", "[weight=10][part=2][timeout=30]") {
   // Create and initialize wallets
   clock_t start = clock();
   time_t wall_begin, wall_end;

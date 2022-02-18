@@ -45,7 +45,7 @@
       "setup": "make test",
       "run": "./test -w NoTests 'Test HedgeHog Food and HedgeHogs - Mutex'",
       "comparison": "included",
-      "timeout": 0.1,
+      "timeout": 0.5,
       "points": 10
     },
     {
