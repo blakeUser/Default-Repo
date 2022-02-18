@@ -25,4 +25,4 @@ jobs:
     timeout-minutes: 5
 name: mp4 autograding
 'on':
-  workflow_dispatch: ''
+  workflow_dispatch: {}
