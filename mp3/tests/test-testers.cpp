@@ -5,7 +5,7 @@
 #include "lib/catch.hpp"
 #include "lib/mstats-utils.h"
 
-// Testers 1-5
+// // Testers 1-5
 TEST_CASE("tester1", "[weight=10][part=5][suite=week2][timeout=30]") {
   system("make -s");
   system("./mstats tests/testers_exe/tester1 evaluate");

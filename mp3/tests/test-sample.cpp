@@ -5,7 +5,7 @@
 #include "lib/catch.hpp"
 #include "lib/mstats-utils.h"
 
-// // BASIC MEMORY ALLOCATOR - 10 points
+// BASIC MEMORY ALLOCATOR - 10 points
 TEST_CASE("`./mstats tests/samples_exe/sample1` test (allocation test)", "[weight=2][part=1]") {
   system("make -s");
   system("./mstats tests/samples_exe/sample1 evaluate");
@@ -55,7 +55,7 @@ TEST_CASE("`./mstats tests/samples_exe/sample1` test (allocation test with reall
   system("rm mstats_result.txt");
 }
 
-// BLOCK SPLITTING - 15 points
+// // BLOCK SPLITTING - 15 points
 TEST_CASE("sample1, Block Splitting", "[weight=15][part=2]") {
   system("make -s");
   system("./mstats tests/samples_exe/sample1 evaluate");
@@ -97,7 +97,7 @@ TEST_CASE("sample4 - Memory Coalescing", "[weight=5][part=3]") {
   system("rm mstats_result.txt");
 }
 
-// FREE LISTS - 10 points
+/* FREE LISTS - 10 points*/
 TEST_CASE("sample6 - Free Lists", "[weight=5][part=4]") {
   system("make -s");
   system("./mstats tests/samples_exe/sample6 evaluate");
