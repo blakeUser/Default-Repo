@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,17 @@ static metadata_t *startofFreeList = '\0';
 
 static size_t requestSize = 0;
 static size_t sbrkSize = 0;
+
+int countFreeList (metadata_t * startofFreeList) {
+  int counter = 0;
+
+  while (startofFreeList->next != NULL) {
+   // printf("s\n");
+    startofFreeList = startofFreeList->next;
+    counter++;
+  }
+  return counter;
+}
 
 metadata_t *get_addr(void *ptr) {
     metadata_t * meta = ptr - sizeof(metadata_t);
@@ -34,8 +46,12 @@ void *calloc(size_t num, size_t size) {
 }
 
 metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
-  printf("-- In split_mem -- \n");
-  if (ptr->size - sizeof(metadata_t) - acquire >= 32) {
+  //printf("in split \n");
+  int one = ptr->size - 32 - acquire;
+  int two = 32;
+
+  if (one > two) {
+    //printf("so one > two\n");
     metadata_t * newAddress = (void*)(ptr + 1) + acquire; //?
     newAddress->size = ptr->size - sizeof(metadata_t) - acquire;
     newAddress->isUsed = 0;
@@ -43,7 +59,7 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
     ptr->isUsed = 1;
     ptr->size = acquire;
     ptr->ptrInMeta = (void*)(ptr + 1);//?
-
+    
     newAddress->next = ptr->next;
     newAddress->prev = ptr->prev;
     if (newAddress->next != NULL) {
@@ -57,76 +73,87 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
     }
     ptr->next = NULL;
     ptr->prev = NULL;
+    //printf("out of split \n");
+    if (newAddress != NULL || newAddress >= sbrk(0)) {
+      //printf("not here right?\n");
+      coaleseUp(newAddress);
+    }
+  
     return ptr;
-
   } else {
-    printf("有👂👂👂👂👂👂👂👂👂👂👂👂👂说\n");
+    printf("大耳朵 👂👂👂👂👂👂👂👂👂👂👂👂👂👂\n");
     if (ptr->next != NULL) {
-      ptr->next->prev = ptr->next;
+      ptr->next->prev = ptr->prev;
     }
     if (ptr->prev != NULL) {
       ptr->prev->next = ptr->next;
     }
     if (ptr == startofFreeList) { //# if is start;
-     printf("👂 && start \n");
+      printf("👂 && start \n");
       startofFreeList = ptr->next;
     }
     ptr->next = NULL;
     ptr->prev = NULL;
     ptr->isUsed = 1;
     ptr->ptrInMeta = ptr + sizeof(metadata_t);
+    //printf("out of split \n");
     return ptr;
   }
 }
-
 
 void *malloc(size_t size) {
   //printf("%d >> New malloc, size is ⚽️ << \n", size);
   if (size == 0) return NULL; 
   void *endOfHeap = sbrk(0);
-  //if (sbrkSize - requestSize >= size) { //In the middle of malloc and we get empty space
   metadata_t * copyOfList = startofFreeList;
   metadata_t * tmp = startofFreeList;
-  //printf("%p the start of linked list in malloc \n", tmp);
+  
   if (startofFreeList != NULL) {
     while ( copyOfList != NULL) {  
-      //printf("%d the size of each linked list at this round ,\n", copyOfList->size);
-      //printf("%p tmp add ~~~~~ \n", tmp);
-      //printf("%d tmp size ~~~~~ \n", tmp->size);
-      //printf("%d copyOfList size ~~~~~ \n", copyOfList->size);
-
+      //printf("? \n");
       if (copyOfList->isUsed == 0 && copyOfList->size == size) { //改到32
         //copyOfList->isUsed = 0;
-        //printStateMent(size, endOfHeap, startOfHeap);
         copyOfList->isUsed = 1;
+       // printStateMent(size, endOfHeap, startOfHeap);
+        if (copyOfList->next != NULL) {
+          copyOfList->next->prev = copyOfList->prev;
+        }
+        if (copyOfList->prev != NULL) {
+          copyOfList->prev->next = copyOfList->next;
+        }
+        if (copyOfList == startofFreeList) { //# if is start;
+          //printf("👂 && start \n");
+          startofFreeList = copyOfList->next;
+        }
+        copyOfList->next = NULL;
+        copyOfList->prev = NULL;
         return (void*)(copyOfList + 1);
       }
 
       if (copyOfList->isUsed == 0 && copyOfList->size > size) {
          if (copyOfList->size >= tmp->size && copyOfList->size >= size) {
           tmp = copyOfList;
-          printf("改变了 🐶🐶🐶🐶🐶 \n");
+          //printf("改变了 🐶🐶🐶🐶🐶 \n");
          }
       }
 
       if (copyOfList->next == NULL) {
-        printf("%d copy of list size before break\n", copyOfList->size);
+        printf("%d copy of list size before break\n", tmp->size);
         break;
       }
-
       copyOfList = copyOfList->next;
     }
   }
-
+  //printf("should get here now \n");
   if (tmp != NULL && tmp->size > size) {
+      //printStateMent(size, endOfHeap, startOfHeap);
       metadata_t * toReturn = split_mem(tmp, size);  
-      requestSize +=  sizeof(metadata_t);
       toReturn->isUsed = 1;
-      printf("above 💣\n");
+      
       return (void*)(toReturn + 1);
   } 
     
-  //------- when we have to sbrk --------------
+  // ------- when we have to sbrk --------- //
 
   if (startOfHeap == NULL) {
     startOfHeap = sbrk(0);//startofheap 永远不会变，这里住着的永远是第一个meta
@@ -137,140 +164,148 @@ void *malloc(size_t size) {
   meta->size = size;
   meta->isUsed = 1;
   void *ptr = sbrk( size );
-  meta->ptrInMeta = ptr;
+  meta->ptrInMeta = ptr; 
   //printStateMent(size, endOfHeap, startOfHeap);
-  //printf("😯😯😯😯😯😯😯😯😯😯😯😯😯 so we have to sbrk .. \n");
   return meta->ptrInMeta;
 }
 
 int count = 0;
 
 void free(void *ptr) {
+
   if (ptr == NULL) {
     return;
   }
-  //printf("free is called\n");
+  //printf("🆓 is called\n");
   metadata_t *meta = get_addr(ptr);
   meta->isUsed = 0;
+
   if (startofFreeList == NULL) {
+    //printf("suppose be here, start NULL \n");
      startofFreeList = meta;
   } else {
+    //printf("start is no null\n");
+
     meta->next = startofFreeList;
     startofFreeList->prev = meta; 
     startofFreeList = meta;
   }
 
+  // printf("%d \n", startofFreeList->size);
+
+  // if (startofFreeList->next != NULL) {
+  //   printf("%d \n", startofFreeList->next->size);
+  //   printf("%d \n", startofFreeList->next->isUsed);
+
+  //     if (startofFreeList->next->next != NULL) {
+  //     printf("%d \n", startofFreeList->next->next->size);
+  //     }
+  // }
+  
+
   coalesceDown(meta);
-  //printf("----------between down and up-----\n");
   coaleseUp(meta);
+
   //printf("%d start size, in free \n -- - -- free  end -- - -\n", startOfHeap->size);
 }
 
-/**
- * Reallocate memory block
- *
- * The size of the memory block pointed to by the ptr parameter is changed
- * to the size bytes, expanding or reducing the amount of memory available
- * in the block.
- *
- * The function may move the memory block to a new location, in which case
- * the new location is returned. The content of the memory block is preserved
- * up to the lesser of the new and old sizes, even if the block is moved. If
- * the new size is larger, the value of the newly allocated portion is
- * indeterminate.
- *
- * In case that ptr is NULL, the function behaves exactly as malloc, assigning
- * a new block of size bytes and returning a pointer to the beginning of it.
- *
- * In case that the size is 0, the memory previously allocated in ptr is
- * deallocated as if a call to free was made, and a NULL pointer is returned.
- *
- * @param ptr
- *    Pointer to a memory block previously allocated with malloc(), calloc()
- *    or realloc() to be reallocated.
- *
- *    If this is NULL, a new block is allocated and a pointer to it is
- *    returned by the function.
- *
- * @param size
- *    New size for the memory block, in bytes.
- *
- *    If it is 0 and ptr points to an existing block of memory, the memory
- *    block pointed by ptr is deallocated and a NULL pointer is returned.
- *
- * @return
- *    A pointer to the reallocated memory block, which may be either the
- *    same as the ptr argument or a new location.
- *
- *    The type of this pointer is void*, which can be cast to the desired
- *    type of data pointer in order to be dereferenceable.
- *
- *    If the function failed to allocate the requested block of memory,
- *    a NULL pointer is returned, and the memory block pointed to by
- *    argument ptr is left unchanged.
- *
- * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
- */
 void *realloc(void *ptr, size_t size) {
+  //printf("%d new size 🏀\n", size);  
   if (ptr == NULL) {
-  return malloc(size);
- }
- if (size <= 0) {
-  free(ptr);
-  return NULL;
- }
- metadata_t * to_realloc = (void *)ptr - sizeof(metadata_t);
-  
- if (size <= to_realloc->size) {
+    return malloc(size);
+  }
+  if (size <= 0) {
+    free(ptr);
+    return NULL;
+  }
+
+  metadata_t * to_realloc = (void *)ptr - sizeof(metadata_t);
+  //printf("%d new realloc size 🏀\n", to_realloc->size); 
+  if (to_realloc->size == size) {
+    return ptr;
+  }
+
+ if (size < to_realloc->size) {
   split_mem(to_realloc, size);
+  //printf("happen at 265\n");
+ // printStateMent(size, sbrk(0), startOfHeap);
   return ptr;
  } else {
-  coalesceDown(to_realloc);
-    coaleseUp(to_realloc);
+   coaleseUp(to_realloc);
+   //coalesceDown(to_realloc);
 
   if (to_realloc->size >= size) {
-   return ptr;
+    //printf("%d happen at 271\n", to_realloc->size);
+     //printStateMent(size, sbrk(0), startOfHeap);
+    return ptr;
   }
+
   void* new_ptr = malloc(size);
   if (new_ptr == NULL) {
+    // printStateMent(size, sbrk(0), startOfHeap);
+    //printf("happen at 276\n");
    return NULL;
   }
+
   memcpy(new_ptr, ptr, to_realloc->size);
   free(ptr);
+  //printf("happen at 281\n");
+  //printStateMent(size, sbrk(0), startOfHeap);
   return new_ptr;
- }
+  }
 } 
 
 
 void coalesceDown(metadata_t *meta) {
 
-  if (meta == startOfHeap) {
+  if (meta == startOfHeap || meta == NULL) {
     //printf("进来看看, meta = start的情况, return \n");
     return;
   }
-  metadata_t * theDownOne = startOfHeap;
 
-  while ( (void*)(theDownOne + 1) + theDownOne->size != meta) { //the one under it.
-    theDownOne = (void*)(theDownOne + 1) + theDownOne->size;
-    //printf("%p 🔥the down one is ", theDownOne);
+  metadata_t * theDownOne;
+  if (startofFreeList != NULL) {
+    theDownOne = startofFreeList;
+    while (theDownOne) {
+      //printf("%d searching linked list in coalesceDown 🏀\n", countFreeList(startofFreeList)); 
+      if ((void*)(theDownOne + 1) + theDownOne->size == meta) {
+        break;
+      }
+      theDownOne = theDownOne->next;
+    }
+    
+    if (theDownOne == NULL) {
+      //printf("%p down one cannot search the down one, return\n", startofFreeList->next);
+      return;
+    }
   }
+
+  // while ( (void*)(theDownOne + 1) + theDownOne->size != meta) { //the one under it.
+  //   theDownOne = (void*)(theDownOne + 1) + theDownOne->size;
+  //   printf("%d 🔥meta \n", theDownOne->size);
+  //   if ((void*)(theDownOne + 1) + theDownOne->size == sbrk(0)) {
+  //     return;
+  //   }
+  //   //printf("%d 🔥the down one is \n", theDownOne->size);
+  //   //printf("%d 🔥meta \n", theDownOne->size);
+  // }
 
   if ( meta->isUsed == 0 && theDownOne->isUsed == 0 ) { //take an action
     theDownOne->size = sizeof(metadata_t) + meta->size + theDownOne->size;
-     //printf("%d 🔥 down activated \n", theDownOne->size);
+    //printf("%d 🔥 down activated \n", theDownOne->size);
   } else {
-     //printf("In down: 上面的 不是free， return \n");
+    //printf("In down: 上面的 不是free， return \n");
     return;
   }
   /* resemble the linked list  */
+  if (meta == startofFreeList) { //# if is start;
+    startofFreeList = meta->next;
+  }
   if (meta->next != NULL) {
-    meta->next->prev = meta->next;
+    meta->next->prev = meta->prev;
   }
   if (meta->prev != NULL) {
     meta->prev->next = meta->next;
-  }
-  if (meta == startofFreeList) { //# if is start;
-    startofFreeList = meta->next;
   }
   meta->next = NULL;
   meta->prev = NULL;
@@ -279,10 +314,13 @@ void coalesceDown(metadata_t *meta) {
 
 
 void coaleseUp(metadata_t *meta) {
+  if (meta == sbrk(0)) {
+    return;
+  }
   metadata_t * goUp =  (void*)(meta + 1)  + meta->size;
   //printf("%d meta->size in up case \n ", goUp->size);
 
-  if (goUp == sbrk(0) || goUp->isUsed == 1) {
+  if (goUp == sbrk(0) || goUp->isUsed == 1 || goUp == NULL) {
     //printf("进来看 meta == end的情况 ||  is used!, return \n");
     return;
   } 
@@ -291,17 +329,31 @@ void coaleseUp(metadata_t *meta) {
    // printStateMent(meta->size, sbrk(0), startOfHeap);
     meta->size += goUp->size + sizeof(metadata_t);
   }
+
   /* Linked list resemble */
   if (goUp == startofFreeList) { //# if is start;
     startofFreeList = goUp->next;
   }
+
   if (goUp->next != NULL) {
-    goUp->next->prev = goUp->next;
+    goUp->next->prev = goUp->prev;
   }
+
   if (goUp->prev != NULL) {
     goUp->prev->next = goUp->next;
   }
   goUp->next = NULL;
   goUp->prev = NULL;
-  //printf("%d 👀👀👀 up merge resemble done .. 👀👀👀 ·\n", goUp->size );
+
 }
+void printStateMent(size_t size, metadata_t * endOfHeap, metadata_t * startOfHeap) {
+  printf("Inside: malloc(%lu):\n", size);
+  metadata_t *curMeta = startOfHeap;
+  printf("-- Start of Heap (%p) --\n", startOfHeap);
+  while ((void *)curMeta < endOfHeap) {   // While we're before the end of the heap...
+    printf("metadata for memory %p: (%p, size=%d, isUsed=%d)\n", (void *)curMeta + sizeof(metadata_t), curMeta, curMeta->size, curMeta->isUsed);
+    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  }
+  printf("-- End of Heap (%p) --\n\n", endOfHeap);
+}
+
