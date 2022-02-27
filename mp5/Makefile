@@ -2,10 +2,14 @@
 ifneq (, $(shell which g++-9))
 CXX = g++-9
 else
+ifneq (, $(shell which g++-11))
+CXX = g++-11
+else
 ifneq (, $(shell which g++))
 CXX = g++
 else
 $(error No g++ compiler found.)
+endif
 endif
 endif
 
