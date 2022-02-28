@@ -27,6 +27,7 @@ void *test_add_hedgehogs(void *wallet) {
 }
 
 TEST_CASE("Test HedgeHog Food and HedgeHogs", "[weight=5][part=1]") {
+  printf("In Test HedgeHog Food and HedgeHogs\n");
   clock_t start = clock();
   time_t wall_begin, wall_end;
   time(&wall_begin);
@@ -90,6 +91,7 @@ void *test_add_hedgehogs_mutex(void *wallet) {
 
 TEST_CASE("Test HedgeHog Food and HedgeHogs - Mutex", "[weight=10][part=2][timeout=30]") {
   // Create and initialize wallets
+  printf("Test HedgeHog Food and HedgeHogs - Mutex 94 \n" );
   clock_t start = clock();
   time_t wall_begin, wall_end;
   time(&wall_begin);

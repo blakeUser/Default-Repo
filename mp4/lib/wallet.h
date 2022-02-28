@@ -9,11 +9,12 @@ typedef struct wallet_resource_ {
   const char *resource_name;
   int amount;
   struct wallet_resource_ *next;
+  pthread_cond_t cond;
 } wallet_resource;
 
 typedef struct wallet_t_ {
   pthread_mutex_t lock;
-  pthread_cond_t cond;
+  
   wallet_resource *head;
 } wallet_t;
 
