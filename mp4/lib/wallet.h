@@ -13,6 +13,7 @@ typedef struct wallet_resource_ {
 
 typedef struct wallet_t_ {
   pthread_mutex_t lock;
+  pthread_cond_t cond;
   wallet_resource *head;
 } wallet_t;
 
