@@ -98,6 +98,8 @@ void wallet_change_resource(wallet_t *wallet, const char *resource, const int de
 void wallet_destroy(wallet_t *wallet) {
   //pthread_cond_destroy(&cond);
   // Implement this
+
+  
   wallet_resource * tmp = wallet->head;
   while (tmp != NULL) {
     wallet_resource * anotherTmp = tmp->next;
