@@ -8,8 +8,7 @@
 #include <pthread.h>
 
 void *client_thread(void *vptr) {
-  int fd = *((int *)vptr);
-
+ 
   return NULL;
 }
 

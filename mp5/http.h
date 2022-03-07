@@ -6,20 +6,33 @@
 extern "C" {
 #endif
 
+struct header_t_ {
+  const char * key;
+  const char * value;
+  struct header_t_ * next;
+}; 
+typedef struct header_t_ header_t;
+
+struct delete_t_ {
+  const char * value;
+  struct delete_t_ * next;
+}; 
+typedef struct delete_t_ delete_t;
 
 struct _HTTPRequest {
   const char *action;
   const char *path;
   const char *version;
   const void *payload;
+  header_t * head;
 
+  // Linked list of pair of header contents
   // You may want to add more to this struct (ex: to hold the headers).
   // ...however, you MUST keep the `action`, `path`, `version`, and `payload` members
-  //    so our test cases can inspect the contents of them without making you write
-  //    a bunch of getter functions. :)
+  // so our test cases can inspect the contents of them without making you write
+  // a bunch of getter functions. :)
 };
 typedef struct _HTTPRequest HTTPRequest;
-
 
 ssize_t httprequest_read(HTTPRequest *req, int sockfd);
 ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer_len);
