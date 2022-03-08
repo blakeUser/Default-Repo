@@ -27,7 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install valgrind
-      run: sudo apt install -y valgrind
+      run: sudo apt-get update && sudo apt install -y valgrind
     - uses: wadefagen/autograding@v2
       with:
         path: mp5/

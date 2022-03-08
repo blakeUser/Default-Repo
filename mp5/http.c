@@ -92,10 +92,6 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
 
     buffer += value_len + 2; //check whether \r\n later
     
-    //printf("%skey is\n", key);
-    //printf("%svalue is \n", value);
-    //printf("%snext is \n", buffer);
-
     if (req->head == NULL) {
       printf("😭\n");
       req->head = node;
@@ -159,7 +155,9 @@ ssize_t httprequest_read(HTTPRequest *req, int sockfd) {
 
   buffer[returnint] = '\0';
 
-  return httprequest_parse_headers(req, buffer, returnint);
+  ssize_t toRETURN = httprequest_parse_headers(req, buffer, returnint);
+  //free(buffer);
+  return toRETURN;
 }
 
 
@@ -223,11 +221,6 @@ void httprequest_destroy(HTTPRequest *req) {
     free(req->version);
     req->version = NULL;
   }
-  // if (req->payload != NULL) {
-  //   free(req->payload);
-  //   req->payload = NULL;
-  // }
-
   header_t * tmp = req->head;
 
   while (tmp != NULL) {
@@ -239,15 +232,5 @@ void httprequest_destroy(HTTPRequest *req) {
     free(tmp);
     tmp = tmphelper;
   }
-
-  // delete_t * deleteTMP = theDeleteList;
-
-  // while (deleteTMP != NULL) {
-  //   delete_t * deleteTMPhelper = deleteTMP->next;
-  //   free(deleteTMP->value);
-  //   deleteTMP->value = NULL;
-  //   free(deleteTMP);
-  //   deleteTMP = deleteTMPhelper;
-  // }
   return;
 }
