@@ -92,6 +92,10 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
 
     buffer += value_len + 2; //check whether \r\n later
     
+    //printf("%skey is\n", key);
+    //printf("%svalue is \n", value);
+    //printf("%snext is \n", buffer);
+
     if (req->head == NULL) {
       printf("😭\n");
       req->head = node;
@@ -116,6 +120,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
       printf("I want to break! \n");
       break;
     }
+    printf("%s inside of the loop \n", buffer);
     // printf("- - - - - -  - - \n");
   }
 
@@ -140,7 +145,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
   return buffer_len;
 }
 
-
+char * global = NULL;
 /**
  * httprequest_read
  * 
@@ -149,15 +154,28 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
 ssize_t httprequest_read(HTTPRequest *req, int sockfd) {
   //open(sockfd);
 
-  char  buffer[10000] ; //realloc the memeory
+  char * buffer = malloc(5000); //realloc the memeory
 
-  ssize_t returnint = read(sockfd, (void*)buffer, 10000);
+  ssize_t returnint = read(sockfd, (void*)buffer, 5000);
 
   buffer[returnint] = '\0';
 
-  ssize_t toRETURN = httprequest_parse_headers(req, buffer, returnint);
+  global = buffer;
+
+  // if (theDeleteList == NULL) {
+  //   theDeleteList = malloc(1000);
+  //   theDeleteList->value = buffer;
+  //   theDeleteList->next = NULL;
+  // } else {
+  //   delete_t * node = malloc(1000);
+  //   node->value = buffer;
+  //   node->next = theDeleteList;
+  //   theDeleteList = node;
+  // }
+
   //free(buffer);
-  return toRETURN;
+
+  return httprequest_parse_headers(req, buffer, returnint);
 }
 
 
@@ -221,6 +239,11 @@ void httprequest_destroy(HTTPRequest *req) {
     free(req->version);
     req->version = NULL;
   }
+  // if (req->payload != NULL) {
+  //   free(req->payload);
+  //   req->payload = NULL;
+  // }
+
   header_t * tmp = req->head;
 
   while (tmp != NULL) {
@@ -231,6 +254,21 @@ void httprequest_destroy(HTTPRequest *req) {
     tmp->value = NULL;
     free(tmp);
     tmp = tmphelper;
+  }
+
+  // delete_t * deleteTMP = theDeleteList;
+
+  // while (deleteTMP != NULL) {
+  //   delete_t * deleteTMPhelper = deleteTMP->next;
+  //   free(deleteTMP->value);
+  //   deleteTMP->value = NULL;
+  //   free(deleteTMP);
+  //   deleteTMP = deleteTMPhelper;
+  // }
+
+  if (global != NULL) {
+    free(global);
+    global = NULL;
   }
   return;
 }
