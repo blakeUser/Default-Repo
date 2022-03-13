@@ -1,7 +1,0 @@
-netid
-jintian4
-<<<<<<< HEAD
-yutong23
-=======
-yutong23
->>>>>>> d6b8a23996be183ddc8b35f4fae46d3a147bb6a9

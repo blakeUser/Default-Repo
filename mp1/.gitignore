@@ -1,4 +1,0 @@
-*.o
-tests/*.o
-main
-test
