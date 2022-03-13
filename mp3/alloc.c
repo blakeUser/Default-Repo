@@ -34,7 +34,6 @@ metadata_t *get_addr(void *ptr) {
 }
 
 void *calloc(size_t num, size_t size) {
-  //printf("🌞🌞 calloc called 🌞🌞·\n");
   size_t number = num * size;
   void *ptr = malloc(number);
   if (!ptr) {
@@ -75,13 +74,10 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
     ptr->prev = NULL;
     //printf("out of split \n");
     if (newAddress != NULL || newAddress >= sbrk(0)) {
-      //printf("not here right?\n");
       coaleseUp(newAddress);
     }
-  
     return ptr;
   } else {
-    printf("大耳朵 👂👂👂👂👂👂👂👂👂👂👂👂👂👂\n");
     if (ptr->next != NULL) {
       ptr->next->prev = ptr->prev;
     }
@@ -89,7 +85,6 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
       ptr->prev->next = ptr->next;
     }
     if (ptr == startofFreeList) { //# if is start;
-      printf("👂 && start \n");
       startofFreeList = ptr->next;
     }
     ptr->next = NULL;
@@ -102,7 +97,6 @@ metadata_t *split_mem(metadata_t *ptr, size_t acquire) {
 }
 
 void *malloc(size_t size) {
-  //printf("%d >> New malloc, size is ⚽️ << \n", size);
   if (size == 0) return NULL; 
   void *endOfHeap = sbrk(0);
   metadata_t * copyOfList = startofFreeList;
@@ -111,7 +105,7 @@ void *malloc(size_t size) {
   if (startofFreeList != NULL) {
     while ( copyOfList != NULL) {  
       //printf("? \n");
-      if (copyOfList->isUsed == 0 && copyOfList->size == size) { //改到32
+      if (copyOfList->isUsed == 0 && copyOfList->size == size) { 
         //copyOfList->isUsed = 0;
         copyOfList->isUsed = 1;
        // printStateMent(size, endOfHeap, startOfHeap);
@@ -122,7 +116,6 @@ void *malloc(size_t size) {
           copyOfList->prev->next = copyOfList->next;
         }
         if (copyOfList == startofFreeList) { //# if is start;
-          //printf("👂 && start \n");
           startofFreeList = copyOfList->next;
         }
         copyOfList->next = NULL;
@@ -133,7 +126,6 @@ void *malloc(size_t size) {
       if (copyOfList->isUsed == 0 && copyOfList->size > size) {
          if (copyOfList->size >= tmp->size && copyOfList->size >= size) {
           tmp = copyOfList;
-          //printf("改变了 🐶🐶🐶🐶🐶 \n");
          }
       }
 
@@ -144,7 +136,6 @@ void *malloc(size_t size) {
       copyOfList = copyOfList->next;
     }
   }
-  //printf("should get here now \n");
   if (tmp != NULL && tmp->size > size) {
       //printStateMent(size, endOfHeap, startOfHeap);
       metadata_t * toReturn = split_mem(tmp, size);  
@@ -156,9 +147,8 @@ void *malloc(size_t size) {
   // ------- when we have to sbrk --------- //
 
   if (startOfHeap == NULL) {
-    startOfHeap = sbrk(0);//startofheap 永远不会变，这里住着的永远是第一个meta
+    startOfHeap = sbrk(0);
   }
-
   //if we have to increase the heap
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   meta->size = size;
@@ -176,7 +166,6 @@ void free(void *ptr) {
   if (ptr == NULL) {
     return;
   }
-  //printf("🆓 is called\n");
   metadata_t *meta = get_addr(ptr);
   meta->isUsed = 0;
 
@@ -210,7 +199,6 @@ void free(void *ptr) {
 }
 
 void *realloc(void *ptr, size_t size) {
-  //printf("%d new size 🏀\n", size);  
   if (ptr == NULL) {
     return malloc(size);
   }
@@ -220,7 +208,6 @@ void *realloc(void *ptr, size_t size) {
   }
 
   metadata_t * to_realloc = (void *)ptr - sizeof(metadata_t);
-  //printf("%d new realloc size 🏀\n", to_realloc->size); 
   if (to_realloc->size == size) {
     return ptr;
   }
@@ -259,7 +246,6 @@ void *realloc(void *ptr, size_t size) {
 void coalesceDown(metadata_t *meta) {
 
   if (meta == startOfHeap || meta == NULL) {
-    //printf("进来看看, meta = start的情况, return \n");
     return;
   }
 
@@ -267,7 +253,6 @@ void coalesceDown(metadata_t *meta) {
   if (startofFreeList != NULL) {
     theDownOne = startofFreeList;
     while (theDownOne) {
-      //printf("%d searching linked list in coalesceDown 🏀\n", countFreeList(startofFreeList)); 
       if ((void*)(theDownOne + 1) + theDownOne->size == meta) {
         break;
       }
@@ -280,21 +265,9 @@ void coalesceDown(metadata_t *meta) {
     }
   }
 
-  // while ( (void*)(theDownOne + 1) + theDownOne->size != meta) { //the one under it.
-  //   theDownOne = (void*)(theDownOne + 1) + theDownOne->size;
-  //   printf("%d 🔥meta \n", theDownOne->size);
-  //   if ((void*)(theDownOne + 1) + theDownOne->size == sbrk(0)) {
-  //     return;
-  //   }
-  //   //printf("%d 🔥the down one is \n", theDownOne->size);
-  //   //printf("%d 🔥meta \n", theDownOne->size);
-  // }
-
   if ( meta->isUsed == 0 && theDownOne->isUsed == 0 ) { //take an action
     theDownOne->size = sizeof(metadata_t) + meta->size + theDownOne->size;
-    //printf("%d 🔥 down activated \n", theDownOne->size);
   } else {
-    //printf("In down: 上面的 不是free， return \n");
     return;
   }
   /* resemble the linked list  */
@@ -309,7 +282,6 @@ void coalesceDown(metadata_t *meta) {
   }
   meta->next = NULL;
   meta->prev = NULL;
-  //printf("%d 👀👀👀 down merge resemble done .. 👀👀👀 ·\n", meta->size );
 }
 
 
@@ -318,10 +290,8 @@ void coaleseUp(metadata_t *meta) {
     return;
   }
   metadata_t * goUp =  (void*)(meta + 1)  + meta->size;
-  //printf("%d meta->size in up case \n ", goUp->size);
 
   if (goUp == sbrk(0) || goUp->isUsed == 1 || goUp == NULL) {
-    //printf("进来看 meta == end的情况 ||  is used!, return \n");
     return;
   } 
   if (goUp->isUsed == 0) {
