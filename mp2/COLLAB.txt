@@ -1,5 +1,1 @@
-netid
-<<<<<<< HEAD
-yutong23
-=======
->>>>>>> main
+
